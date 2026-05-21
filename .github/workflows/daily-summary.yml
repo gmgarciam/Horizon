@@ -39,19 +39,16 @@ jobs:
           tools: none
 
       # ── 4. Create .env from secrets ───────────────────────────────────────
-      #    Add whichever AI provider key you use; delete the others.
       - name: Write .env file
         run: |
-          cat > .env << 'EOF'
-          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
-          GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
-          MANUS_API_KEY=${{ secrets.MANUS_API_KEY }}
-          EOF
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" > .env
+          echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> .env
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+          echo "MANUS_API_KEY=${{ secrets.MANUS_API_KEY }}" >> .env
 
       # ── 5. Run Horizon to generate the daily summary ──────────────────────
       - name: Generate daily summary
-        run: uv run horizon --hours 24
+        run: uv run horizon --hours 48
 
       # ── 6. Send the summary to Telegram via PHP ───────────────────────────
       - name: Send to Telegram
