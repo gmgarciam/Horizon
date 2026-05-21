@@ -56,6 +56,7 @@ jobs:
       # ── 6. Send the summary to Telegram via PHP ───────────────────────────
       - name: Send to Telegram
         env:
+          MANUS_API_KEY: ${{ secrets.MANUS_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: php scripts/send_telegram.php
