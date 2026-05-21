@@ -18,7 +18,7 @@ define('POLL_MAX',      60);     // max number of poll attempts (~5 min)
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function getEnv(string $name): string
+function requireEnv(string $name): string
 {
     $value = getenv($name);
     if ($value === false || $value === '') {
@@ -291,9 +291,9 @@ function sendToTelegram(string $token, string $chatId, string $text): void
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
-$manusToken    = getEnv('MANUS_API_KEY');
-$telegramToken = getEnv('TELEGRAM_BOT_TOKEN');
-$chatId        = getEnv('TELEGRAM_CHAT_ID');
+$manusToken    = requireEnv('MANUS_API_KEY');
+$telegramToken = requireEnv('TELEGRAM_BOT_TOKEN');
+$chatId        = requireEnv('TELEGRAM_CHAT_ID');
 
 $rawSummary = getLatestSummary();
 $taskId     = createManusTask($manusToken, $rawSummary);
@@ -302,4 +302,4 @@ $finalText  = extractSummary($messages, $rawSummary);
 
 sendToTelegram($telegramToken, $chatId, $finalText);
 
-echo "🎉 Done! Manus-powered summary delivered to Telegram brought to you by Estebagel and Co.\n";
+echo "🎉 Done! Manus-powered summary delivered to Telegram.\n";
