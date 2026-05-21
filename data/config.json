@@ -28,8 +28,8 @@
         "category": "ai-news"
       },
       {
-        "name": "Anthropic Blog",
-        "url": "https://www.anthropic.com/feed",
+        "name": "Anthropic News",
+        "url": "https://www.anthropic.com/rss.xml",
         "enabled": true,
         "category": "ai-news"
       },
