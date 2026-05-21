@@ -18,43 +18,8 @@
         "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
         "enabled": true,
         "category": "world-news"
-      },
-      {
-        "name": "Al Jazeera",
-        "url": "https://www.aljazeera.com/xml/rss/all.xml",
-        "enabled": true,
-        "category": "world-news"
-      },
-      {
-        "name": "Financial Times",
-        "url": "https://www.ft.com/rss/home",
-        "enabled": true,
-        "category": "business-finance"
-      },
-      {
-        "name": "Investing.com",
-        "url": "https://www.investing.com/rss/news.rss",
-        "enabled": true,
-        "category": "business-finance"
-      },
-      {
-        "name": "Rocky Patel Cigars",
-        "url": "https://rockypatel.com/feed",
-        "enabled": true,
-        "category": "cigars"
-      },
-      {
-        "name": "Swiss Cuban Cigars",
-        "url": "https://swisscubancigars.com/blog/feed",
-        "enabled": true,
-        "category": "cigars"
-      },
-      {
-        "name": "LI Cigars",
-        "url": "https://licigar.com/feed",
-        "enabled": true,
-        "category": "cigars"
       }
+     
     ],
     "reddit": {
       "enabled": false
