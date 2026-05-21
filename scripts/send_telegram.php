@@ -14,7 +14,7 @@ define('MANUS_BASE',    'https://api.manus.ai/v2');
 define('TELEGRAM_API',  'https://api.telegram.org/bot%s/%s');
 define('MAX_CHUNK',     4000);   // Telegram max is 4096
 define('POLL_INTERVAL', 5);       // seconds between polls      // seconds between polls
-define('POLL_MAX',      5);   // temporary: short for debugging
+define('POLL_MAX',      120);  // ~10 min
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -175,12 +175,7 @@ function pollManusTask(string $apiKey, string $taskId): array
             manusHeaders($apiKey)
         );
 
-        // Debug: dump full response on first poll attempt
-        if ($attempt === 1) {
-            echo "\n📋 DEBUG task.detail response: " . json_encode($detail['body']) . "\n";
-        }
-
-        $status = $detail['body']['status'] ?? $detail['body']['task']['status'] ?? $detail['body']['data']['status'] ?? 'unknown';
+        $status = $detail['body']['task']['status'] ?? $detail['body']['status'] ?? 'unknown';
         echo " [{$status}]";
 
         if ($status === 'failed' || $status === 'error') {
@@ -189,7 +184,7 @@ function pollManusTask(string $apiKey, string $taskId): array
             exit(1);
         }
 
-        if ($status === 'completed' || $status === 'finished' || $status === 'done') {
+        if (in_array($status, ['completed', 'finished', 'done', 'stopped'])) {
             echo "\n✅ Manus task completed!\n";
 
             // Fetch messages to get the structured output
