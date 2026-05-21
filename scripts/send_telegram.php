@@ -97,10 +97,20 @@ function createManusTask(string $apiKey, string $newsContent): string
     echo "🤖 Sending news to Manus for summarization...\n";
 
     $prompt = <<<PROMPT
-You are a tech news editor. Below is today's raw AI/tech news digest collected from Hacker News and other sources.
+You are a seasoned executive briefing editor. Below is today's raw news digest collected from multiple sources including BBC, Reuters, Al Jazeera, Financial Times, CNBC, Reddit, and cigar publications.
 
-Please process it and return a clean, well-structured summary suitable for a Telegram message. 
-Be concise but informative. Use emoji where appropriate. Group by topic if possible.
+Please process it and return a polished, well-structured daily briefing suitable for a Telegram message. Follow these rules:
+
+1. Group stories into these sections (use these exact headers):
+   🌍 WORLD NEWS & POLITICS
+   💰 BUSINESS & FINANCE  
+   🚬 CIGARS & LIFESTYLE
+
+2. Under each section, list 3-5 of the most important stories with a one-line bold headline and a 2-3 sentence summary.
+3. Skip any low-quality, duplicate, or irrelevant items.
+4. Keep the tone professional but readable — like a morning briefing for a busy executive.
+5. End with a one-liner "Quote of the Day" if you find something notable in the digest.
+6. If a section has no relevant stories, skip it entirely — don't include empty sections.
 
 RAW NEWS DIGEST:
 {$newsContent}
@@ -110,7 +120,7 @@ PROMPT;
         'message' => [
             'content' => $prompt,
         ],
-        'title'                   => 'Daily Tech News Summary - ' . date('Y-m-d'),
+        'title'                   => 'Executive Daily Briefing - ' . date('Y-m-d'),
         'agent_profile'           => 'manus-1.6',
         'interactive_mode'        => false,
         'hide_in_task_list'       => true,
@@ -119,15 +129,15 @@ PROMPT;
             'properties' => [
                 'summary' => [
                     'type'        => 'string',
-                    'description' => 'The full formatted news summary ready to send to Telegram',
+                    'description' => 'The full formatted executive briefing ready to send to Telegram, with sections for World News, Business, and Cigars',
                 ],
                 'headline' => [
                     'type'        => 'string',
-                    'description' => 'A single punchy headline summarizing today\'s biggest story',
+                    'description' => 'The single most important headline of the day across all categories',
                 ],
                 'article_count' => [
                     'type'        => 'integer',
-                    'description' => 'Number of news items included in the summary',
+                    'description' => 'Total number of news items included across all sections',
                 ],
             ],
             'required'             => ['summary', 'headline', 'article_count'],
@@ -252,7 +262,7 @@ function sendToTelegram(string $token, string $chatId, string $text): void
 
     foreach ($chunks as $i => $chunk) {
         if ($i === 0) {
-            $chunk = "🌅 *Horizon Daily Briefing*\n\n" . $chunk;
+            $chunk = "☀️ *Good Morning — Daily Executive Briefing*\n\n" . $chunk;
         }
 
         $url     = sprintf(TELEGRAM_API, $token, 'sendMessage');
