@@ -1,13 +1,13 @@
 {
   "version": "1.0",
-"ai": {
-  "provider": "gemini",
-  "model": "gemini-2.0-flash",
-  "api_key_env": "GEMINI_API_KEY",
-  "languages": ["en"],
-  "throttle_sec": 2,
-  "analysis_concurrency": 1
-},
+  "ai": {
+    "provider": "gemini",
+    "model": "gemini-2.0-flash",
+    "api_key_env": "GEMINI_API_KEY",
+    "languages": ["en"],
+    "throttle_sec": 4,
+    "analysis_concurrency": 1
+  },
   "sources": {
     "hackernews": {
       "enabled": false
@@ -16,12 +16,6 @@
       {
         "name": "BBC World News",
         "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
-        "enabled": true,
-        "category": "world-news"
-      },
-      {
-        "name": "Reuters World",
-        "url": "https://www.rss.app/feeds/reuters-rss-feed.xml",
         "enabled": true,
         "category": "world-news"
       },
@@ -38,22 +32,10 @@
         "category": "business-finance"
       },
       {
-        "name": "CNBC World",
-        "url": "https://www.cnbc.com/id/100003114/device/rss/rss.html",
-        "enabled": true,
-        "category": "business-finance"
-      },
-      {
-        "name": "Bloomberg via Investing.com",
+        "name": "Investing.com",
         "url": "https://www.investing.com/rss/news.rss",
         "enabled": true,
         "category": "business-finance"
-      },
-      {
-        "name": "Cigar Aficionado",
-        "url": "https://www.cigaraficionado.com/feed",
-        "enabled": true,
-        "category": "cigars"
       },
       {
         "name": "Rocky Patel Cigars",
@@ -62,50 +44,23 @@
         "category": "cigars"
       },
       {
-        "name": "Cigar Snob Magazine",
-        "url": "https://cigarsnob.com/feed/",
+        "name": "Swiss Cuban Cigars",
+        "url": "https://swisscubancigars.com/blog/feed",
+        "enabled": true,
+        "category": "cigars"
+      },
+      {
+        "name": "LI Cigars",
+        "url": "https://licigar.com/feed",
         "enabled": true,
         "category": "cigars"
       }
     ],
     "reddit": {
-      "enabled": true,
-      "subreddits": [
-        {
-          "subreddit": "worldnews",
-          "enabled": true,
-          "sort": "hot",
-          "time_filter": "day",
-          "fetch_limit": 15,
-          "min_score": 500
-        },
-        {
-          "subreddit": "business",
-          "enabled": true,
-          "sort": "hot",
-          "time_filter": "day",
-          "fetch_limit": 10,
-          "min_score": 50
-        },
-        {
-          "subreddit": "economics",
-          "enabled": true,
-          "sort": "hot",
-          "time_filter": "day",
-          "fetch_limit": 10,
-          "min_score": 50
-        },
-        {
-          "subreddit": "cigars",
-          "enabled": true,
-          "sort": "hot",
-          "time_filter": "day",
-          "fetch_limit": 10,
-          "min_score": 20
-        }
-      ],
-      "users": [],
-      "fetch_comments": 5
+      "enabled": false
+    },
+    "telegram": {
+      "enabled": false
     }
   },
   "filtering": {

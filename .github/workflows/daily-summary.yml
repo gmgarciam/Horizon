@@ -2,21 +2,17 @@ name: Daily Horizon Summary + Telegram
 
 on:
   schedule:
-    # Runs every day at 23:00 UTC (7:00 AM Philippine / Hong Kong Time / UTC+8)
-    # Adjust to your preferred time: https://crontab.guru/
     - cron: "0 23 * * *"
-  workflow_dispatch: # Allows manual trigger from the GitHub Actions tab
+  workflow_dispatch:
 
 jobs:
   generate-and-notify:
     runs-on: ubuntu-latest
 
     steps:
-      # ── 1. Checkout your forked repo ──────────────────────────────────────
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ── 2. Set up Python + uv (required to run Horizon itself) ────────────
       - name: Install uv
         uses: astral-sh/setup-uv@v4
         with:
@@ -30,7 +26,6 @@ jobs:
       - name: Install Horizon dependencies
         run: uv sync
 
-      # ── 3. Set up PHP (for our Telegram sender script) ────────────────────
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -38,19 +33,14 @@ jobs:
           extensions: curl
           tools: none
 
-      # ── 4. Create .env from secrets ───────────────────────────────────────
       - name: Write .env file
         run: |
-          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" > .env
-          echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> .env
-          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
           echo "MANUS_API_KEY=${{ secrets.MANUS_API_KEY }}" >> .env
 
-      # ── 5. Run Horizon to generate the daily summary ──────────────────────
       - name: Generate daily summary
         run: uv run horizon --hours 48
 
-      # ── 6. Send the summary to Telegram via PHP ───────────────────────────
       - name: Send to Telegram
         env:
           MANUS_API_KEY: ${{ secrets.MANUS_API_KEY }}
@@ -58,8 +48,6 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: php scripts/send_telegram.php
 
-      # ── 7. (Optional) Commit the generated summary back to the repo ───────
-      #    Remove this step if you don't want to store summaries in git.
       - name: Commit summary to repo
         run: |
           git config user.name  "github-actions[bot]"
