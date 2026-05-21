@@ -38,6 +38,11 @@ jobs:
           echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
           echo "MANUS_API_KEY=${{ secrets.MANUS_API_KEY }}" >> .env
 
+      - name: Debug .env
+        run: |
+          echo "--- .env contents (keys masked) ---"
+          cat .env | sed 's/=.*/=***/'    
+
       - name: Generate daily summary
         run: uv run horizon --hours 48
 
