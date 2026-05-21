@@ -7,88 +7,103 @@
     "languages": ["en"]
   },
   "sources": {
-    "github": [
-      {
-        "type": "user_events",
-        "username": "karpathy",
-        "enabled": true
-      },
-      {
-        "type": "repo_releases",
-        "owner": "vllm-project",
-        "repo": "vllm",
-        "enabled": true
-      },
-      {
-        "type": "repo_releases",
-        "owner": "sgl-project",
-        "repo": "sglang",
-        "enabled": true
-      },
-      {
-        "type": "repo_releases",
-        "owner": "triton-lang",
-        "repo": "triton",
-        "enabled": true
-      }
-    ],
     "hackernews": {
-      "enabled": true,
-      "fetch_top_stories": 30,
-      "min_score": 50
+      "enabled": false
     },
     "rss": [
       {
-        "name": "Simon Willison",
-        "url": "https://simonwillison.net/atom/everything/",
+        "name": "BBC World News",
+        "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
         "enabled": true,
-        "category": "ai-tools"
+        "category": "world-news"
       },
       {
-        "name": "GitHub Trending - Daily",
-        "url": "https://mshibanami.github.io/GitHubTrendingRSS/daily/all.xml",
+        "name": "Reuters World",
+        "url": "https://www.rss.app/feeds/reuters-rss-feed.xml",
         "enabled": true,
-        "category": "github-trending"
+        "category": "world-news"
       },
       {
-        "name": "LWN.net",
-        "url": "https://lwn.net/headlines/full_text?key=${LWN_KEY}",
+        "name": "Al Jazeera",
+        "url": "https://www.aljazeera.com/xml/rss/all.xml",
         "enabled": true,
-        "category": "linux-kernel"
+        "category": "world-news"
+      },
+      {
+        "name": "Financial Times",
+        "url": "https://www.ft.com/rss/home",
+        "enabled": true,
+        "category": "business-finance"
+      },
+      {
+        "name": "CNBC World",
+        "url": "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+        "enabled": true,
+        "category": "business-finance"
+      },
+      {
+        "name": "Bloomberg via Investing.com",
+        "url": "https://www.investing.com/rss/news.rss",
+        "enabled": true,
+        "category": "business-finance"
+      },
+      {
+        "name": "Cigar Aficionado",
+        "url": "https://www.cigaraficionado.com/feed",
+        "enabled": true,
+        "category": "cigars"
+      },
+      {
+        "name": "Rocky Patel Cigars",
+        "url": "https://rockypatel.com/feed",
+        "enabled": true,
+        "category": "cigars"
+      },
+      {
+        "name": "Cigar Snob Magazine",
+        "url": "https://cigarsnob.com/feed/",
+        "enabled": true,
+        "category": "cigars"
       }
     ],
     "reddit": {
       "enabled": true,
       "subreddits": [
         {
-          "subreddit": "MachineLearning",
+          "subreddit": "worldnews",
           "enabled": true,
           "sort": "hot",
           "time_filter": "day",
           "fetch_limit": 15,
-          "min_score": 30
+          "min_score": 500
         },
         {
-          "subreddit": "LocalLLaMA",
+          "subreddit": "business",
           "enabled": true,
           "sort": "hot",
           "time_filter": "day",
-          "fetch_limit": 15,
-          "min_score": 30
+          "fetch_limit": 10,
+          "min_score": 50
+        },
+        {
+          "subreddit": "economics",
+          "enabled": true,
+          "sort": "hot",
+          "time_filter": "day",
+          "fetch_limit": 10,
+          "min_score": 50
+        },
+        {
+          "subreddit": "cigars",
+          "enabled": true,
+          "sort": "hot",
+          "time_filter": "day",
+          "fetch_limit": 10,
+          "min_score": 20
         }
       ],
       "users": [],
-      "fetch_comments": 10
-    },
-    "telegram": {
-      "enabled": true,
-      "channels": [
-        {
-          "channel": "zaihuapd",
-          "enabled": true,
-          "fetch_limit": 20
-        }
-      ]
+      "fetch_comments": 5
     }
   },
   "filtering": {
