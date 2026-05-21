@@ -208,23 +208,55 @@ function pollManusTask(string $apiKey, string $taskId): array
 
 function extractSummary(array $messages, string $fallbackContent): string
 {
+    // Debug: log the response structure so we can see what Manus returns
+    echo "📋 Manus response keys: " . implode(', ', array_keys($messages)) . "\n";
+
     // Look for structured output or assistant message in the response
     $items = $messages['messages'] ?? $messages['data'] ?? $messages;
 
+    if (!is_array($items)) {
+        echo "⚠️  Unexpected response format, sending raw summary.\n";
+        return $fallbackContent;
+    }
+
     foreach ($items as $item) {
+        if (!is_array($item)) continue;
+
+        // Debug: show what keys each item has
+        echo "   📦 Item keys: " . implode(', ', array_keys($item)) . "\n";
+
         // Try structured output first
         if (!empty($item['structured_output']['summary'])) {
             $data = $item['structured_output'];
             $headline = $data['headline'] ?? '';
             $count    = $data['article_count'] ?? '?';
             $summary  = $data['summary'];
-
-            return "📰 *{$headline}*\n_{$count} stories today_\n\n{$summary}";
+            echo "✅ Found structured output!\n";
+            return $headline . "\n" . $count . " stories today\n\n" . $summary;
         }
 
-        // Fall back to plain assistant message content
-        if (($item['role'] ?? '') === 'assistant' && !empty($item['content'])) {
-            return $item['content'];
+        // Try content field (could be string or array)
+        if (!empty($item['content'])) {
+            $c = $item['content'];
+            // Content might be a string or an array of blocks
+            if (is_string($c) && strlen($c) > 50) {
+                echo "✅ Found content in message (role: " . ($item['role'] ?? 'unknown') . ")\n";
+                return $c;
+            }
+            if (is_array($c)) {
+                foreach ($c as $block) {
+                    if (is_array($block) && ($block['type'] ?? '') === 'text' && !empty($block['text'])) {
+                        echo "✅ Found text block in content\n";
+                        return $block['text'];
+                    }
+                }
+            }
+        }
+
+        // Try text field directly
+        if (!empty($item['text']) && strlen($item['text']) > 50) {
+            echo "✅ Found text field in message\n";
+            return $item['text'];
         }
     }
 
@@ -264,10 +296,12 @@ function sendToTelegram(string $token, string $chatId, string $text): void
 
     foreach ($chunks as $i => $chunk) {
         if ($i === 0) {
-            $chunk = "☀️ *Good Morning — AI Daily Briefing*\n\n" . $chunk;
+            $chunk = "☀️ Good Morning — AI Daily Briefing\n\n" . $chunk;
         }
 
         $url     = sprintf(TELEGRAM_API, $token, 'sendMessage');
+
+        // Try Markdown first, fall back to plain text if it fails
         $payload = [
             'chat_id'                  => $chatId,
             'text'                     => $chunk,
@@ -294,7 +328,30 @@ function sendToTelegram(string $token, string $chatId, string $text): void
             exit(1);
         }
 
-        if ($httpStatus < 200 || $httpStatus >= 300) {
+        if ($httpStatus === 400 && str_contains($response, "can't parse entities")) {
+            echo "   ⚠️  Markdown failed, retrying as plain text...\n";
+            // Strip markdown formatting and retry without parse_mode
+            $plainChunk = str_replace(['*', '_', '`', '[', ']'], '', $chunk);
+            $payload['text'] = $plainChunk;
+            unset($payload['parse_mode']);
+
+            $ch2 = curl_init($url);
+            curl_setopt_array($ch2, [
+                CURLOPT_POST           => true,
+                CURLOPT_POSTFIELDS     => json_encode($payload),
+                CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT        => 30,
+            ]);
+            $response2   = curl_exec($ch2);
+            $httpStatus2 = curl_getinfo($ch2, CURLINFO_HTTP_CODE);
+            curl_close($ch2);
+
+            if ($httpStatus2 < 200 || $httpStatus2 >= 300) {
+                echo "⚠️  Telegram API error (plain text) [{$httpStatus2}]: {$response2}\n";
+                exit(1);
+            }
+        } elseif ($httpStatus < 200 || $httpStatus >= 300) {
             echo "⚠️  Telegram API error [{$httpStatus}]: {$response}\n";
             exit(1);
         }
