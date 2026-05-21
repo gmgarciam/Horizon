@@ -1,25 +1,68 @@
 {
   "version": "1.0",
-"ai": {
-  "provider": "openai",
-  "model": "gpt-3.5-turbo",
-  "api_key_env": "OPENAI_API_KEY",
-  "languages": ["en"],
-  "throttle_sec": 2,
-  "analysis_concurrency": 1
-},
+  "ai": {
+    "provider": "openai",
+    "model": "gpt-3.5-turbo",
+    "api_key_env": "OPENAI_API_KEY",
+    "languages": ["en"],
+    "throttle_sec": 2,
+    "analysis_concurrency": 1
+  },
   "sources": {
     "hackernews": {
-      "enabled": false
+      "enabled": true,
+      "fetch_top_stories": 20,
+      "min_score": 100
     },
     "rss": [
       {
-        "name": "BBC World News",
-        "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+        "name": "OpenAI Blog",
+        "url": "https://openai.com/blog/rss.xml",
         "enabled": true,
-        "category": "world-news"
+        "category": "ai-news"
+      },
+      {
+        "name": "Google AI Blog",
+        "url": "https://blog.google/technology/ai/rss",
+        "enabled": true,
+        "category": "ai-news"
+      },
+      {
+        "name": "Anthropic Blog",
+        "url": "https://www.anthropic.com/feed",
+        "enabled": true,
+        "category": "ai-news"
+      },
+      {
+        "name": "Hugging Face Blog",
+        "url": "https://huggingface.co/blog/feed.xml",
+        "enabled": true,
+        "category": "ai-news"
+      },
+      {
+        "name": "MIT Technology Review - AI",
+        "url": "https://www.technologyreview.com/topic/artificial-intelligence/feed",
+        "enabled": true,
+        "category": "ai-news"
+      },
+      {
+        "name": "MarkTechPost",
+        "url": "https://www.marktechpost.com/feed/",
+        "enabled": true,
+        "category": "ai-news"
+      },
+      {
+        "name": "The Verge - AI",
+        "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+        "enabled": true,
+        "category": "ai-news"
+      },
+      {
+        "name": "Ars Technica - AI",
+        "url": "https://feeds.arstechnica.com/arstechnica/technology-lab",
+        "enabled": true,
+        "category": "ai-news"
       }
-     
     ],
     "reddit": {
       "enabled": false

@@ -97,20 +97,22 @@ function createManusTask(string $apiKey, string $newsContent): string
     echo "🤖 Sending news to Manus for summarization...\n";
 
     $prompt = <<<PROMPT
-You are a seasoned executive briefing editor. Below is today's raw news digest collected from multiple sources including BBC, Reuters, Al Jazeera, Financial Times, CNBC, Reddit, and cigar publications.
+You are an AI industry analyst preparing a daily executive briefing. Below is today's raw news digest collected from sources including OpenAI, Google AI, Anthropic, Hugging Face, MIT Technology Review, The Verge, Ars Technica, MarkTechPost, and Hacker News.
 
-Please process it and return a polished, well-structured daily briefing suitable for a Telegram message. Follow these rules:
+Please process it and return a polished, well-structured AI news briefing suitable for a Telegram message. Follow these rules:
 
-1. Group stories into these sections (use these exact headers):
-   🌍 WORLD NEWS & POLITICS
-   💰 BUSINESS & FINANCE  
-   🚬 CIGARS & LIFESTYLE
+1. Group stories into these sections (use these exact headers, skip empty ones):
+   🚀 NEW MODELS & RELEASES — new AI models, product launches, major updates
+   🔬 RESEARCH & BREAKTHROUGHS — papers, benchmarks, novel techniques
+   🏢 INDUSTRY & BUSINESS — funding, acquisitions, partnerships, strategy moves
+   ⚖️ REGULATION & ETHICS — policy, safety, governance, legal developments
+   🛠️ TOOLS & DEVELOPER — frameworks, APIs, open source, tutorials
 
 2. Under each section, list 3-5 of the most important stories with a one-line bold headline and a 2-3 sentence summary.
-3. Skip any low-quality, duplicate, or irrelevant items.
-4. Keep the tone professional but readable — like a morning briefing for a busy executive.
-5. End with a one-liner "Quote of the Day" if you find something notable in the digest.
-6. If a section has no relevant stories, skip it entirely — don't include empty sections.
+3. Skip any low-quality, duplicate, or non-AI items.
+4. Keep the tone professional but readable — like a morning briefing for a busy executive who invests in AI.
+5. End with a "🔮 One to Watch" — a single emerging trend or under-the-radar story worth keeping an eye on.
+6. If a section has no relevant stories, skip it entirely.
 
 RAW NEWS DIGEST:
 {$newsContent}
@@ -129,11 +131,11 @@ PROMPT;
             'properties' => [
                 'summary' => [
                     'type'        => 'string',
-                    'description' => 'The full formatted executive briefing ready to send to Telegram, with sections for World News, Business, and Cigars',
+                    'description' => 'The full formatted AI news briefing ready to send to Telegram, with sections for Models, Research, Industry, Regulation, and Tools',
                 ],
                 'headline' => [
                     'type'        => 'string',
-                    'description' => 'The single most important headline of the day across all categories',
+                    'description' => 'The single most important AI headline of the day',
                 ],
                 'article_count' => [
                     'type'        => 'integer',
@@ -262,7 +264,7 @@ function sendToTelegram(string $token, string $chatId, string $text): void
 
     foreach ($chunks as $i => $chunk) {
         if ($i === 0) {
-            $chunk = "☀️ *Good Morning — Daily Executive Briefing*\n\n" . $chunk;
+            $chunk = "☀️ *Good Morning — AI Daily Briefing*\n\n" . $chunk;
         }
 
         $url     = sprintf(TELEGRAM_API, $token, 'sendMessage');
@@ -305,13 +307,18 @@ function sendToTelegram(string $token, string $chatId, string $text): void
 
 $manusToken    = requireEnv('MANUS_API_KEY');
 $telegramToken = requireEnv('TELEGRAM_BOT_TOKEN');
-$chatId        = requireEnv('TELEGRAM_CHAT_ID');
+$chatIds       = array_map('trim', explode(',', requireEnv('TELEGRAM_CHAT_IDS')));
+
+echo "👥 Recipients: " . count($chatIds) . " chat(s)\n";
 
 $rawSummary = getLatestSummary();
 $taskId     = createManusTask($manusToken, $rawSummary);
 $messages   = pollManusTask($manusToken, $taskId);
 $finalText  = extractSummary($messages, $rawSummary);
 
-sendToTelegram($telegramToken, $chatId, $finalText);
+foreach ($chatIds as $chatId) {
+    echo "📤 Sending to chat ID: {$chatId}\n";
+    sendToTelegram($telegramToken, $chatId, $finalText);
+}
 
-echo "🎉 Done! Manus-powered summary delivered to Telegram.\n";
+echo "🎉 Done! Manus-powered summary delivered to " . count($chatIds) . " recipient(s).\n";
