@@ -108,11 +108,15 @@ Please process it and return a polished, well-structured AI news briefing suitab
    ⚖️ REGULATION & ETHICS — policy, safety, governance, legal developments
    🛠️ TOOLS & DEVELOPER — frameworks, APIs, open source, tutorials
 
-2. Under each section, list 3-5 of the most important stories with a one-line bold headline and a 2-3 sentence summary.
+2. Under each section, list 3-5 of the most important stories. For each story include:
+   - A one-line bold headline
+   - A 2-3 sentence summary
+   - The source URL on its own line formatted as: 🔗 URL_HERE
 3. Skip any low-quality, duplicate, or non-AI items.
 4. Keep the tone professional but readable — like a morning briefing for a busy executive who invests in AI.
 5. End with a "🔮 One to Watch" — a single emerging trend or under-the-radar story worth keeping an eye on.
 6. If a section has no relevant stories, skip it entirely.
+7. IMPORTANT: Always include the original source URL for each story so readers can click through to the full article.
 
 RAW NEWS DIGEST:
 {$newsContent}
