@@ -37,6 +37,8 @@ jobs:
         run: |
           echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
           echo "MANUS_API_KEY=${{ secrets.MANUS_API_KEY }}" >> .env
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+
 
       - name: Debug .env
         run: |
