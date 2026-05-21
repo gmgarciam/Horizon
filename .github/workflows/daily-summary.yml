@@ -2,9 +2,9 @@ name: Daily Horizon Summary + Telegram
 
 on:
   schedule:
-    # Runs every day at 08:00 UTC (4:00 PM Philippine Time / UTC+8)
+    # Runs every day at 23:00 UTC (7:00 AM Philippine / Hong Kong Time / UTC+8)
     # Adjust to your preferred time: https://crontab.guru/
-    - cron: "0 0 * * *"
+    - cron: "0 23 * * *"
   workflow_dispatch: # Allows manual trigger from the GitHub Actions tab
 
 jobs:
@@ -46,6 +46,7 @@ jobs:
           OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
           GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+          MANUS_API_KEY=${{ secrets.MANUS_API_KEY }}
           EOF
 
       # ── 5. Run Horizon to generate the daily summary ──────────────────────
