@@ -225,37 +225,55 @@ function extractSummary(array $messages, string $fallbackContent): string
         // Debug: show what keys each item has
         echo "   📦 Item keys: " . implode(', ', array_keys($item)) . "\n";
 
-        // Try structured output first
-        if (!empty($item['structured_output']['summary'])) {
-            $data = $item['structured_output'];
-            $headline = $data['headline'] ?? '';
-            $count    = $data['article_count'] ?? '?';
-            $summary  = $data['summary'];
-            echo "✅ Found structured output!\n";
-            return $headline . "\n" . $count . " stories today\n\n" . $summary;
+        // Try structured_output_result (Manus v2 response format)
+        if (!empty($item['structured_output_result'])) {
+            $data = $item['structured_output_result'];
+            // Could be a JSON string or already decoded
+            if (is_string($data)) {
+                $data = json_decode($data, true) ?? [];
+            }
+            if (!empty($data['summary'])) {
+                $headline = $data['headline'] ?? '';
+                $count    = $data['article_count'] ?? '?';
+                echo "✅ Found structured output result!\n";
+                return $headline . "\n" . $count . " stories today\n\n" . $data['summary'];
+            }
+            // If structured_output_result is just a string
+            if (is_string($item['structured_output_result']) && strlen($item['structured_output_result']) > 50) {
+                echo "✅ Found structured output as text\n";
+                return $item['structured_output_result'];
+            }
         }
 
-        // Try content field (could be string or array)
+        // Try assistant_message (Manus v2 response format)
+        if (!empty($item['assistant_message'])) {
+            $msg = $item['assistant_message'];
+            // Could be a string or an object with content/text
+            if (is_string($msg) && strlen($msg) > 50) {
+                echo "✅ Found assistant_message as text\n";
+                return $msg;
+            }
+            if (is_array($msg)) {
+                $text = $msg['content'] ?? $msg['text'] ?? $msg['message'] ?? '';
+                if (is_string($text) && strlen($text) > 50) {
+                    echo "✅ Found assistant_message content\n";
+                    return $text;
+                }
+            }
+        }
+
+        // Try content field (fallback)
         if (!empty($item['content'])) {
             $c = $item['content'];
-            // Content might be a string or an array of blocks
             if (is_string($c) && strlen($c) > 50) {
-                echo "✅ Found content in message (role: " . ($item['role'] ?? 'unknown') . ")\n";
+                echo "✅ Found content in message\n";
                 return $c;
-            }
-            if (is_array($c)) {
-                foreach ($c as $block) {
-                    if (is_array($block) && ($block['type'] ?? '') === 'text' && !empty($block['text'])) {
-                        echo "✅ Found text block in content\n";
-                        return $block['text'];
-                    }
-                }
             }
         }
 
         // Try text field directly
         if (!empty($item['text']) && strlen($item['text']) > 50) {
-            echo "✅ Found text field in message\n";
+            echo "✅ Found text field\n";
             return $item['text'];
         }
     }

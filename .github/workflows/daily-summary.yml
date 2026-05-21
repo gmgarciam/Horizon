@@ -5,6 +5,9 @@ on:
     - cron: "0 23 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   generate-and-notify:
     runs-on: ubuntu-latest
@@ -12,6 +15,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@v4
@@ -35,10 +40,8 @@ jobs:
 
       - name: Write .env file
         run: |
-          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
-          echo "MANUS_API_KEY=${{ secrets.MANUS_API_KEY }}" >> .env          
-          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
-
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" > .env
+          echo "MANUS_API_KEY=${{ secrets.MANUS_API_KEY }}" >> .env
 
       - name: Generate daily summary
         run: uv run horizon --hours 48
