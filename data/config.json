@@ -28,12 +28,6 @@
         "category": "ai-news"
       },
       {
-        "name": "Anthropic News",
-        "url": "https://www.anthropic.com/rss.xml",
-        "enabled": true,
-        "category": "ai-news"
-      },
-      {
         "name": "Hugging Face Blog",
         "url": "https://huggingface.co/blog/feed.xml",
         "enabled": true,
@@ -62,6 +56,36 @@
         "url": "https://feeds.arstechnica.com/arstechnica/technology-lab",
         "enabled": true,
         "category": "ai-news"
+      },
+      {
+        "name": "Product Hunt",
+        "url": "https://www.producthunt.com/feed",
+        "enabled": true,
+        "category": "ai-tools"
+      },
+      {
+        "name": "Ben's Bites",
+        "url": "https://bensbites.beehiiv.com/feed",
+        "enabled": true,
+        "category": "ai-tools"
+      },
+      {
+        "name": "GitHub Trending - Daily",
+        "url": "https://mshibanami.github.io/GitHubTrendingRSS/daily/all.xml",
+        "enabled": true,
+        "category": "ai-tools"
+      },
+      {
+        "name": "Latent Space",
+        "url": "https://www.latent.space/feed",
+        "enabled": true,
+        "category": "ai-tools"
+      },
+      {
+        "name": "Future Tools",
+        "url": "https://www.futuretools.io/blog-feed.xml",
+        "enabled": true,
+        "category": "ai-tools"
       }
     ],
     "reddit": {
@@ -72,7 +96,7 @@
     }
   },
   "filtering": {
-    "ai_score_threshold": 8.5,
-    "time_window_hours": 24
+    "ai_score_threshold": 5.0,
+    "time_window_hours": 48
   }
 }

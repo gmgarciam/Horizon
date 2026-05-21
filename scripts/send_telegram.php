@@ -97,7 +97,7 @@ function createManusTask(string $apiKey, string $newsContent): string
     echo "🤖 Sending news to Manus for summarization...\n";
 
     $prompt = <<<PROMPT
-You are an AI industry analyst preparing a daily executive briefing. Below is today's raw news digest collected from sources including OpenAI, Google AI, Anthropic, Hugging Face, MIT Technology Review, The Verge, Ars Technica, MarkTechPost, and Hacker News.
+You are an AI industry analyst preparing a daily executive briefing. Below is today's raw news digest collected from sources including OpenAI, Google AI, Anthropic, Hugging Face, MIT Technology Review, The Verge, Ars Technica, MarkTechPost, Hacker News, Product Hunt, Ben's Bites, GitHub Trending, Latent Space, and Future Tools.
 
 Please process it and return a polished, well-structured AI news briefing suitable for a Telegram message. Follow these rules:
 
@@ -106,7 +106,8 @@ Please process it and return a polished, well-structured AI news briefing suitab
    🔬 RESEARCH & BREAKTHROUGHS — papers, benchmarks, novel techniques
    🏢 INDUSTRY & BUSINESS — funding, acquisitions, partnerships, strategy moves
    ⚖️ REGULATION & ETHICS — policy, safety, governance, legal developments
-   🛠️ TOOLS & DEVELOPER — frameworks, APIs, open source, tutorials
+   🛠️ TOOLS & OPEN SOURCE — new AI tools, GitHub trending repos, plugins, frameworks, MCP servers, AI agents, developer utilities
+   🧰 SKILLS & WORKFLOWS — practical AI workflows, prompt engineering, automation tips, tutorials on using AI tools effectively
 
 2. Under each section, list 3-5 of the most important stories. For each story include:
    - A one-line bold headline
@@ -135,7 +136,7 @@ PROMPT;
             'properties' => [
                 'summary' => [
                     'type'        => 'string',
-                    'description' => 'The full formatted AI news briefing ready to send to Telegram, with sections for Models, Research, Industry, Regulation, and Tools',
+                    'description' => 'The full formatted AI news briefing ready to send to Telegram, with sections for Models, Research, Industry, Regulation, Tools & Open Source, and Skills & Workflows',
                 ],
                 'headline' => [
                     'type'        => 'string',
