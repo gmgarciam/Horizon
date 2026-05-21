@@ -5,7 +5,7 @@
     "model": "gemini-2.0-flash",
     "api_key_env": "GEMINI_API_KEY",
     "languages": ["en"],
-    "throttle_sec": 4,
+    "throttle_sec": 15,
     "analysis_concurrency": 1
   },
   "sources": {
