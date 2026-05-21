@@ -1,11 +1,13 @@
 {
   "version": "1.0",
-  "ai": {
-    "provider": "gemini",
-    "model": "gemini-2.0-flash",
-    "api_key_env": "GEMINI_API_KEY",
-    "languages": ["en"]
-  },
+"ai": {
+  "provider": "gemini",
+  "model": "gemini-2.0-flash",
+  "api_key_env": "GEMINI_API_KEY",
+  "languages": ["en"],
+  "throttle_sec": 2,
+  "analysis_concurrency": 1
+},
   "sources": {
     "hackernews": {
       "enabled": false
