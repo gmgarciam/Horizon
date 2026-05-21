@@ -13,8 +13,8 @@
 define('MANUS_BASE',    'https://api.manus.ai/v2');
 define('TELEGRAM_API',  'https://api.telegram.org/bot%s/%s');
 define('MAX_CHUNK',     4000);   // Telegram max is 4096
-define('POLL_INTERVAL', 5);      // seconds between polls
-define('POLL_MAX',      60);     // max number of poll attempts (~5 min)
+define('POLL_INTERVAL', 5);       // seconds between polls      // seconds between polls
+define('POLL_MAX',      120);  // ~10 min     // max number of poll attempts (~5 min)
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -166,9 +166,11 @@ function pollManusTask(string $apiKey, string $taskId): array
         );
 
         $status = $detail['body']['status'] ?? 'unknown';
+        echo " [{$status}]";
 
         if ($status === 'failed' || $status === 'error') {
             echo "\n❌ Manus task failed with status: {$status}\n";
+            echo "Full response: " . json_encode($detail['body']) . "\n";
             exit(1);
         }
 
