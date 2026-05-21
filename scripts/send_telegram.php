@@ -12,9 +12,9 @@
 
 define('MANUS_BASE',    'https://api.manus.ai/v2');
 define('TELEGRAM_API',  'https://api.telegram.org/bot%s/%s');
-define('MAX_CHUNK',     4000);   // Telegram max is 4096
-define('POLL_INTERVAL', 5);       // seconds between polls      // seconds between polls
-define('POLL_MAX',      120);  // ~10 min
+define('MAX_CHUNK',     4000);
+define('POLL_INTERVAL', 5);
+define('POLL_MAX',      120);
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -175,7 +175,6 @@ function pollManusTask(string $apiKey, string $taskId): array
         sleep(POLL_INTERVAL);
         echo '.';
 
-        // Check task status first
         $detail = curlRequest(
             'GET',
             MANUS_BASE . "/task.detail?task_id={$taskId}",
@@ -194,7 +193,6 @@ function pollManusTask(string $apiKey, string $taskId): array
         if (in_array($status, ['completed', 'finished', 'done', 'stopped'])) {
             echo "\n✅ Manus task completed!\n";
 
-            // Fetch messages to get the structured output
             $messages = curlRequest(
                 'GET',
                 MANUS_BASE . "/task.listMessages?task_id={$taskId}&order=desc&limit=10",
@@ -213,10 +211,8 @@ function pollManusTask(string $apiKey, string $taskId): array
 
 function extractSummary(array $messages, string $fallbackContent): string
 {
-    // Debug: log the response structure so we can see what Manus returns
     echo "📋 Manus response keys: " . implode(', ', array_keys($messages)) . "\n";
 
-    // Look for structured output or assistant message in the response
     $items = $messages['messages'] ?? $messages['data'] ?? $messages;
 
     if (!is_array($items)) {
@@ -227,13 +223,11 @@ function extractSummary(array $messages, string $fallbackContent): string
     foreach ($items as $item) {
         if (!is_array($item)) continue;
 
-        // Debug: show what keys each item has
         echo "   📦 Item keys: " . implode(', ', array_keys($item)) . "\n";
 
         // Try structured_output_result (Manus v2 response format)
         if (!empty($item['structured_output_result'])) {
             $data = $item['structured_output_result'];
-            // Could be a JSON string or already decoded
             if (is_string($data)) {
                 $data = json_decode($data, true) ?? [];
             }
@@ -243,7 +237,6 @@ function extractSummary(array $messages, string $fallbackContent): string
                 echo "✅ Found structured output result!\n";
                 return $headline . "\n" . $count . " stories today\n\n" . $data['summary'];
             }
-            // If structured_output_result is just a string
             if (is_string($item['structured_output_result']) && strlen($item['structured_output_result']) > 50) {
                 echo "✅ Found structured output as text\n";
                 return $item['structured_output_result'];
@@ -253,7 +246,6 @@ function extractSummary(array $messages, string $fallbackContent): string
         // Try assistant_message (Manus v2 response format)
         if (!empty($item['assistant_message'])) {
             $msg = $item['assistant_message'];
-            // Could be a string or an object with content/text
             if (is_string($msg) && strlen($msg) > 50) {
                 echo "✅ Found assistant_message as text\n";
                 return $msg;
@@ -283,7 +275,6 @@ function extractSummary(array $messages, string $fallbackContent): string
         }
     }
 
-    // Last resort: send the raw Horizon summary
     echo "⚠️  Could not extract Manus output, sending raw summary.\n";
     return $fallbackContent;
 }
@@ -311,6 +302,43 @@ function chunkText(string $text, int $size = MAX_CHUNK): array
     return $chunks;
 }
 
+function getRecipientName(string $chatId): string
+{
+    $token = requireEnv('TELEGRAM_BOT_TOKEN');
+    $url   = sprintf('https://api.telegram.org/bot%s/getChat', $token);
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => json_encode(['chat_id' => $chatId]),
+        CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 10,
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode !== 200) {
+        return $chatId;
+    }
+
+    $data = json_decode($response, true);
+    if (empty($data['ok']) || empty($data['result'])) {
+        return $chatId;
+    }
+
+    $chat      = $data['result'];
+    $firstName = $chat['first_name'] ?? '';
+    $lastName  = $chat['last_name'] ?? '';
+    $title     = $chat['title'] ?? '';
+
+    $name = trim($title ?: "{$firstName} {$lastName}");
+
+    return $name ?: $chatId;
+}
+
 function sendToTelegram(string $token, string $chatId, string $text): void
 {
     $chunks = chunkText($text);
@@ -319,12 +347,10 @@ function sendToTelegram(string $token, string $chatId, string $text): void
 
     foreach ($chunks as $i => $chunk) {
         if ($i === 0) {
-            $chunk = "☀️ Good Morning — AI Daily Briefing\n\n" . $chunk;
+            $chunk = "☀️ Good Morning " . getRecipientName($chatId) . " — AI Daily Briefing\n\n" . $chunk;
         }
 
         $url     = sprintf(TELEGRAM_API, $token, 'sendMessage');
-
-        // Try Markdown first, fall back to plain text if it fails
         $payload = [
             'chat_id'                  => $chatId,
             'text'                     => $chunk,
@@ -353,7 +379,6 @@ function sendToTelegram(string $token, string $chatId, string $text): void
 
         if ($httpStatus === 400 && str_contains($response, "can't parse entities")) {
             echo "   ⚠️  Markdown failed, retrying as plain text...\n";
-            // Strip markdown formatting and retry without parse_mode
             $plainChunk = str_replace(['*', '_', '`', '[', ']'], '', $chunk);
             $payload['text'] = $plainChunk;
             unset($payload['parse_mode']);
@@ -397,7 +422,7 @@ $messages   = pollManusTask($manusToken, $taskId);
 $finalText  = extractSummary($messages, $rawSummary);
 
 foreach ($chatIds as $chatId) {
-    echo "📤 Sending to chat ID: {$chatId}\n";
+    echo "📤 Sending to " . getRecipientName($chatId) . " ({$chatId})\n";
     sendToTelegram($telegramToken, $chatId, $finalText);
 }
 
