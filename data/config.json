@@ -1,19 +1,14 @@
 {
   "version": "1.0",
   "ai": {
-    "provider": "deepseek",
-    "model": "deepseek-v4-flash",
-    "base_url": "https://api.deepseek.com",
-    "api_key_env": "OPENAI_API_KEY",
-    "temperature": 0.3,
-    "max_tokens": 8192,
-    "languages": [
-      "zh",
-      "en"
-    ],
-    "analysis_concurrency": 5,
-    "enrichment_concurrency": 5
-  },
+  "provider": "openai",
+  "model": "manus-1.6",
+  "api_key_env": "MANUS_API_KEY",
+  "languages": [
+    "en",
+    "zh"
+  ]
+},
   "sources": {
     "github": [
       {
