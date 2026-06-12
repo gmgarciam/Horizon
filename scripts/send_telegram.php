@@ -36,6 +36,7 @@ function curlRequest(string $method, string $url, array $headers, ?array $body =
         CURLOPT_TIMEOUT        => 30,
         CURLOPT_HTTPHEADER     => $headers,
         CURLOPT_CUSTOMREQUEST  => $method,
+        CURLOPT_USERAGENT      => 'Horizon-Bot/1.0 (+https://github.com)',
     ]);
 
     if ($body !== null) {
@@ -48,23 +49,22 @@ function curlRequest(string $method, string $url, array $headers, ?array $body =
     curl_close($ch);
 
     if ($curlError) {
-        echo "❌ cURL error: {$curlError}\n";
-        exit(1);
+        return ['code' => 0, 'body' => null, 'error' => "cURL error: {$curlError}"];
     }
 
     $decoded = json_decode($response, true);
     if ($decoded === null) {
-        echo "❌ Failed to decode response (HTTP {$httpCode}): {$response}\n";
-        exit(1);
+        return ['code' => $httpCode, 'body' => null, 'error' => "Failed to decode response (HTTP {$httpCode}): {$response}"];
     }
 
-    return ['code' => $httpCode, 'body' => $decoded];
+    return ['code' => $httpCode, 'body' => $decoded, 'error' => null];
 }
 
 function manusHeaders(string $apiKey): array
 {
     return [
         'Content-Type: application/json',
+        'Accept: application/json',
         "x-manus-api-key: {$apiKey}",
     ];
 }
@@ -92,7 +92,7 @@ function getLatestSummary(): string
 
 // ── Step 2: Create Manus task ─────────────────────────────────────────────────
 
-function createManusTask(string $apiKey, string $newsContent): string
+function createManusTask(string $apiKey, string $newsContent): ?string
 {
     echo "🤖 Sending news to Manus for summarization...\n";
 
@@ -154,10 +154,15 @@ PROMPT;
 
     $result = curlRequest('POST', MANUS_BASE . '/task.create', manusHeaders($apiKey), $payload);
 
+    if ($result['error']) {
+        echo "⚠️  Manus request failed: {$result['error']}\n";
+        return null;
+    }
+
     if ($result['code'] !== 200 || empty($result['body']['ok'])) {
         $error = $result['body']['error']['message'] ?? json_encode($result['body']);
-        echo "❌ Manus task creation failed: {$error}\n";
-        exit(1);
+        echo "⚠️  Manus task creation failed (HTTP {$result['code']}): {$error}\n";
+        return null;
     }
 
     $taskId = $result['body']['task_id'];
@@ -167,7 +172,7 @@ PROMPT;
 
 // ── Step 3: Poll until Manus is done ─────────────────────────────────────────
 
-function pollManusTask(string $apiKey, string $taskId): array
+function pollManusTask(string $apiKey, string $taskId): ?array
 {
     echo "⏳ Polling Manus for results";
 
@@ -181,13 +186,18 @@ function pollManusTask(string $apiKey, string $taskId): array
             manusHeaders($apiKey)
         );
 
+        if ($detail['error']) {
+            echo "\n⚠️  Manus polling request failed: {$detail['error']}\n";
+            return null;
+        }
+
         $status = $detail['body']['task']['status'] ?? $detail['body']['status'] ?? 'unknown';
         echo " [{$status}]";
 
         if ($status === 'failed' || $status === 'error') {
-            echo "\n❌ Manus task failed with status: {$status}\n";
+            echo "\n⚠️  Manus task failed with status: {$status}\n";
             echo "Full response: " . json_encode($detail['body']) . "\n";
-            exit(1);
+            return null;
         }
 
         if (in_array($status, ['completed', 'finished', 'done', 'stopped'])) {
@@ -199,12 +209,17 @@ function pollManusTask(string $apiKey, string $taskId): array
                 manusHeaders($apiKey)
             );
 
+            if ($messages['error']) {
+                echo "\n⚠️  Failed to fetch Manus messages: {$messages['error']}\n";
+                return null;
+            }
+
             return $messages['body'];
         }
     }
 
-    echo "\n❌ Timed out waiting for Manus (tried " . POLL_MAX . " times)\n";
-    exit(1);
+    echo "\n⚠️  Timed out waiting for Manus (tried " . POLL_MAX . " times)\n";
+    return null;
 }
 
 // ── Step 4: Extract the summary from Manus response ──────────────────────────
@@ -416,14 +431,28 @@ $chatIds       = array_map('trim', explode(',', requireEnv('TELEGRAM_CHAT_IDS'))
 
 echo "👥 Recipients: " . count($chatIds) . " chat(s)\n";
 
-$rawSummary = getLatestSummary();
-$taskId     = createManusTask($manusToken, $rawSummary);
-$messages   = pollManusTask($manusToken, $taskId);
-$finalText  = extractSummary($messages, $rawSummary);
+$rawSummary  = getLatestSummary();
+$manusFailed = false;
+
+$taskId   = createManusTask($manusToken, $rawSummary);
+$messages = $taskId !== null ? pollManusTask($manusToken, $taskId) : null;
+
+if ($messages !== null) {
+    $finalText = extractSummary($messages, $rawSummary);
+} else {
+    echo "⚠️  Manus summarization unavailable, falling back to raw summary.\n";
+    $manusFailed = true;
+    $finalText   = $rawSummary;
+}
 
 foreach ($chatIds as $chatId) {
     echo "📤 Sending to " . getRecipientName($chatId) . " ({$chatId})\n";
     sendToTelegram($telegramToken, $chatId, $finalText);
+}
+
+if ($manusFailed) {
+    echo "⚠️  Done, but Manus summarization failed — sent raw summary to " . count($chatIds) . " recipient(s).\n";
+    exit(1);
 }
 
 echo "🎉 Done! Manus-powered summary delivered to " . count($chatIds) . " recipient(s).\n";
